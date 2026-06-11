@@ -3,36 +3,12 @@ import useStore from "../store/useStore";
 import ReactMarkdown from "react-markdown";
 
 export default function NoteEditor({ noteId }: { noteId: string }) {
-  const { notes, updateNote, deleteNote } = useStore();
+  const { notes, selectNote, updateNote, deleteNote } = useStore();
   const note = notes.find((n) => n.id === noteId);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [preview, setPreview] = useState(false);
   const [backlinks, setBacklinks] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (note) {
-      window.api.getBacklinks(note.id).then(setBacklinks);
-    }
-  }, [note]);
-
-  // In JSX, after title & editor:
-  {
-    backlinks.length > 0 && (
-      <div className="mt-4 border-t pt-4">
-        <h3 className="text-sm font-semibold mb-2">Backlinks</h3>
-        {backlinks.map((link: any) => (
-          <div
-            key={link.id}
-            className="text-sm text-blue-500 cursor-pointer"
-            onClick={() => selectNote(link.source_note_id)}>
-            {notes.find((n) => n.id === link.source_note_id)?.title ||
-              "Untitled"}
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   useEffect(() => {
     if (note) {
@@ -46,26 +22,22 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
       await updateNote(note.id, { title, content });
     }
   };
+
   const processLinks = useCallback(async () => {
     if (!note) return;
-    // Clear existing links for this source
-    await window.api.clearLinksForNote(note.id);
     const regex = /\[\[([^\]]+)\]\]/g;
     let match;
+    const links = [];
     while ((match = regex.exec(content)) !== null) {
       const linkText = match[1];
-      // Find target note by title (case-insensitive)
       const target = notes.find(
         (n) => n.title.toLowerCase() === linkText.toLowerCase(),
       );
       if (target && target.id !== note.id) {
-        await window.api.createLink({
-          sourceNoteId: note.id,
-          targetNoteId: target.id,
-          linkText,
-        });
+        links.push({ id: target.id, source_note_id: target.id, title: target.title });
       }
     }
+    setBacklinks(links);
   }, [content, note, notes]);
 
   const handleDelete = async () => {
@@ -74,7 +46,6 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
     }
   };
 
-  // Trigger on content change (debounce might be better)
   useEffect(() => {
     if (note) {
       const timer = setTimeout(() => {
@@ -82,7 +53,7 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [content]);
+  }, [content, processLinks, note]);
 
   if (!note) return null;
 
@@ -122,6 +93,20 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
           className="flex-1 w-full resize-none bg-transparent outline-none font-mono text-sm p-2 border border-gray-300 dark:border-gray-600 rounded"
           placeholder="Start writing... (Markdown supported)"
         />
+      )}
+
+      {backlinks.length > 0 && (
+        <div className="mt-4 border-t pt-4">
+          <h3 className="text-sm font-semibold mb-2">Backlinks</h3>
+          {backlinks.map((link: any) => (
+            <div
+              key={link.id}
+              className="text-sm text-blue-500 cursor-pointer hover:underline"
+              onClick={() => selectNote(link.id)}>
+              {link.title || "Untitled"}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
