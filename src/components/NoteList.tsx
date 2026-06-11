@@ -1,7 +1,15 @@
 import useStore from "../store/useStore";
 import type { Note } from "../types";
 
-export default function NoteList({ notes }: { notes: Note[] }) {
+interface NoteListProps {
+  notes: Note[];
+}
+
+/**
+ * Displays a list of notes for the current view or branch
+ * Allows selecting a note to edit
+ */
+export default function NoteList({ notes }: NoteListProps) {
   const { selectNote, selectedNoteId } = useStore();
   return (
     <ul className="space-y-1">
@@ -13,7 +21,8 @@ export default function NoteList({ notes }: { notes: Note[] }) {
             selectedNoteId === note.id
               ? "bg-blue-100 dark:bg-blue-900"
               : "hover:bg-gray-100 dark:hover:bg-gray-800"
-          }`}>
+          }`}
+        >
           <div className="text-sm font-medium truncate">
             {note.title || "Untitled"}
           </div>

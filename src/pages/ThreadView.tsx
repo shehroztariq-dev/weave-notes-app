@@ -3,18 +3,19 @@ import { useParams } from "react-router-dom";
 import useStore from "../store/useStore";
 import NoteEditor from "../components/NoteEditor";
 import NoteList from "../components/NoteList";
-import { Note } from "../types";
+import type { Note } from "../types";
 
+/**
+ * Main thread view component
+ * Displays notes in a list and provides editing interface
+ * Supports viewing all notes or filtering by branch
+ */
 export default function ThreadView() {
   const { branchId } = useParams<{ branchId: string }>();
-  const {
-    notes,
-    fetchNotes,
-    selectedNoteId,
-    createNote,
-  } = useStore();
+  const { notes, fetchNotes, selectedNoteId, createNote } = useStore();
   const [displayNotes, setDisplayNotes] = useState<Note[]>([]);
 
+  // Load notes for current branch or all notes
   useEffect(() => {
     if (branchId) {
       window.api.getBranchNotes(branchId).then(setDisplayNotes);
@@ -23,6 +24,7 @@ export default function ThreadView() {
     }
   }, [branchId, notes.length]);
 
+  // Handle creating a new note in the current branch
   const handleNewNote = async () => {
     await createNote(branchId);
     if (branchId) {
@@ -33,17 +35,21 @@ export default function ThreadView() {
 
   return (
     <div className="flex h-full">
+      {/* Notes list sidebar */}
       <div className="w-72 border-r border-gray-300 dark:border-gray-700 overflow-y-auto p-4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-semibold">{branchId ? "Branch" : "All Notes"}</h2>
           <button
             onClick={handleNewNote}
-            className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
+            className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
+          >
             + Note
           </button>
         </div>
         <NoteList notes={displayNotes} />
       </div>
+
+      {/* Note editor */}
       <div className="flex-1 p-4">
         {selectedNoteId ? (
           <NoteEditor noteId={selectedNoteId} />

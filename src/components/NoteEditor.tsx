@@ -2,13 +2,19 @@ import { useState, useEffect, useCallback } from "react";
 import useStore from "../store/useStore";
 import ReactMarkdown from "react-markdown";
 
+interface Backlink {
+  id: string;
+  source_note_id: string;
+  title: string;
+}
+
 export default function NoteEditor({ noteId }: { noteId: string }) {
   const { notes, selectNote, updateNote, deleteNote } = useStore();
   const note = notes.find((n) => n.id === noteId);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [preview, setPreview] = useState(false);
-  const [backlinks, setBacklinks] = useState<any[]>([]);
+  const [backlinks, setBacklinks] = useState<Backlink[]>([]);
 
   useEffect(() => {
     if (note) {
@@ -27,14 +33,18 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
     if (!note) return;
     const regex = /\[\[([^\]]+)\]\]/g;
     let match;
-    const links = [];
+    const links: Backlink[] = [];
     while ((match = regex.exec(content)) !== null) {
       const linkText = match[1];
       const target = notes.find(
         (n) => n.title.toLowerCase() === linkText.toLowerCase(),
       );
       if (target && target.id !== note.id) {
-        links.push({ id: target.id, source_note_id: target.id, title: target.title });
+        links.push({
+          id: target.id,
+          source_note_id: target.id,
+          title: target.title,
+        });
       }
     }
     setBacklinks(links);
@@ -70,12 +80,14 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
         <div className="flex gap-2">
           <button
             onClick={() => setPreview(!preview)}
-            className="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-700">
+            className="text-xs px-2 py-1 rounded bg-gray-200 dark:bg-gray-700"
+          >
             {preview ? "Edit" : "Preview"}
           </button>
           <button
             onClick={handleDelete}
-            className="text-xs px-2 py-1 rounded bg-red-500 text-white">
+            className="text-xs px-2 py-1 rounded bg-red-500 text-white"
+          >
             Delete
           </button>
         </div>
@@ -98,11 +110,12 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
       {backlinks.length > 0 && (
         <div className="mt-4 border-t pt-4">
           <h3 className="text-sm font-semibold mb-2">Backlinks</h3>
-          {backlinks.map((link: any) => (
+          {backlinks.map((link) => (
             <div
               key={link.id}
               className="text-sm text-blue-500 cursor-pointer hover:underline"
-              onClick={() => selectNote(link.id)}>
+              onClick={() => selectNote(link.id)}
+            >
               {link.title || "Untitled"}
             </div>
           ))}

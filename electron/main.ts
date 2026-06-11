@@ -5,6 +5,10 @@ import { registerIpcHandlers } from "./ipcHandlers";
 
 let mainWindow: BrowserWindow | null = null;
 
+/**
+ * Creates the main application window
+ * Configures window size, preload script, and security options
+ */
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -23,12 +27,18 @@ function createWindow() {
   }
 }
 
+/**
+ * Initialize the app when ready
+ */
 app.whenReady().then(() => {
   initDB();
   registerIpcHandlers();
   createWindow();
 });
 
+/**
+ * Quit the app when all windows are closed (except on macOS)
+ */
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });

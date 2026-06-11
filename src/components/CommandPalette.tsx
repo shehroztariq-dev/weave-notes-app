@@ -1,6 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import useStore from "../store/useStore";
 
+interface CommandAction {
+  label: string;
+  action: () => void;
+}
+
+/**
+ * Command palette for quick note search and actions
+ * Triggered with Ctrl+K / Cmd+K
+ * Allows searching notes and executing commands
+ */
 export default function CommandPalette() {
   const {
     commandPaletteOpen,
@@ -13,6 +23,7 @@ export default function CommandPalette() {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Focus input when palette opens
   useEffect(() => {
     if (commandPaletteOpen) {
       inputRef.current?.focus();
@@ -20,6 +31,7 @@ export default function CommandPalette() {
     }
   }, [commandPaletteOpen]);
 
+  // Listen for Ctrl+K / Cmd+K shortcut
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
@@ -33,13 +45,15 @@ export default function CommandPalette() {
 
   if (!commandPaletteOpen) return null;
 
+  // Filter notes based on query
   const filteredNotes = notes.filter(
     (n) =>
       n.title.toLowerCase().includes(query.toLowerCase()) ||
       n.content.toLowerCase().includes(query.toLowerCase()),
   );
 
-  const actions = [
+  // Available commands
+  const actions: CommandAction[] = [
     {
       label: "Create new note",
       action: () => {
@@ -59,10 +73,12 @@ export default function CommandPalette() {
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/30"
-      onClick={toggleCommandPalette}>
+      onClick={toggleCommandPalette}
+    >
       <div
         className="bg-white dark:bg-gray-800 w-full max-w-lg rounded-lg shadow-xl"
-        onClick={(e) => e.stopPropagation()}>
+        onClick={(e) => e.stopPropagation()}
+      >
         <input
           ref={inputRef}
           value={query}
@@ -83,7 +99,8 @@ export default function CommandPalette() {
                   onClick={() => {
                     selectNote(note.id);
                     toggleCommandPalette();
-                  }}>
+                  }}
+                >
                   {note.title || "Untitled"}
                 </button>
               ))}
@@ -96,7 +113,8 @@ export default function CommandPalette() {
             <button
               key={action.label}
               className="w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-              onClick={action.action}>
+              onClick={action.action}
+            >
               {action.label}
             </button>
           ))}
