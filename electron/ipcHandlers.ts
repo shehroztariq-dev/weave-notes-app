@@ -1,5 +1,6 @@
 import { ipcMain } from "electron";
-import { v4 as uuidv4 } from "uuid";
+import crypto from "node:crypto";
+const id = crypto.randomUUID();
 
 interface CreateNoteData {
   title?: string;
@@ -47,7 +48,6 @@ export function registerIpcHandlers() {
   // Notes handlers
   ipcMain.handle("notes:create", (_, noteData: CreateNoteData) => {
     try {
-      const id = uuidv4();
       const newNote: Note = {
         id,
         title: noteData.title || "",
@@ -112,8 +112,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("notes:getAll", () => {
     try {
       return Array.from(notesStore.values()).sort(
-        (a, b) =>
-          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+        (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
       );
     } catch (error) {
       console.error("Error getting all notes:", error);
@@ -135,7 +134,6 @@ export function registerIpcHandlers() {
   // Branches handlers
   ipcMain.handle("branches:create", (_, branchData: CreateBranchData) => {
     try {
-      const id = uuidv4();
       const newBranch: Branch = {
         id,
         name: branchData.name,
@@ -161,8 +159,7 @@ export function registerIpcHandlers() {
   ipcMain.handle("branches:getTree", () => {
     try {
       return Array.from(branchesStore.values()).sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
     } catch (error) {
       console.error("Error getting branch tree:", error);
