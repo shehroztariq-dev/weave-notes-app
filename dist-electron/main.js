@@ -22,3 +22,7 @@ electron.app.whenReady().then(createWindow);
 electron.app.on("window-all-closed", () => {
   if (process.platform !== "darwin") electron.app.quit();
 });
+electron.app.whenReady().then(() => {
+  initDB();
+  createWindow();
+});

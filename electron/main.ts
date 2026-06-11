@@ -1,5 +1,7 @@
 import { app, BrowserWindow } from "electron";
 import path from "node:path";
+import db, { initDB } from "./database";
+import { v4 as uuidv4 } from "uuid";
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -25,4 +27,9 @@ app.whenReady().then(createWindow);
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
+});
+
+app.whenReady().then(() => {
+  initDB();
+  createWindow();
 });
