@@ -151,6 +151,13 @@ function buildBranchTree(branches: Branch[]): BranchTreeNode | null {
   });
 
   return roots.length > 0
-    ? { id: "root", name: "Threads", root_note_id: "", created_at: new Date().toISOString(), children: roots }
+    ? {
+        id: "root",
+        name: "Threads",
+        root_note_id: "",
+        parent_branch_id: null,
+        created_at: new Date().toISOString(),
+        children: roots,
+      }
     : null;
 }
