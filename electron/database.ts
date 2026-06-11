@@ -10,4 +10,3 @@ export function initDB() {
 }
 
 export { notesDB, branchesDB };
-

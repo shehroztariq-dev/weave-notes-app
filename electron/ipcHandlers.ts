@@ -1,5 +1,4 @@
 import { ipcMain } from "electron";
-import db from "./database";
 import { v4 as uuidv4 } from "uuid";
 
 export function registerIpcHandlers() {
@@ -75,5 +74,13 @@ export function registerIpcHandlers() {
   ipcMain.handle("branches:getTree", () => {
     // Return all branches as flat list; frontend builds tree
     return db.prepare("SELECT * FROM branches ORDER BY created_at").all();
+  });
+  ipcMain.handle("notes:clearLinks", (_, noteId) => {
+    db.prepare("DELETE FROM note_links WHERE source_note_id = ?").run(noteId);
+  });
+  ipcMain.handle("notes:createLink", (_, link) => {
+    db.prepare(
+      "INSERT INTO note_links (source_note_id, target_note_id, link_text) VALUES (?, ?, ?)",
+    ).run(link.sourceNoteId, link.targetNoteId, link.linkText);
   });
 }

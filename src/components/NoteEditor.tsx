@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import useStore from "../store/useStore";
 import ReactMarkdown from "react-markdown";
 
@@ -8,6 +8,31 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [preview, setPreview] = useState(false);
+  const [backlinks, setBacklinks] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (note) {
+      window.api.getBacklinks(note.id).then(setBacklinks);
+    }
+  }, [note]);
+
+  // In JSX, after title & editor:
+  {
+    backlinks.length > 0 && (
+      <div className="mt-4 border-t pt-4">
+        <h3 className="text-sm font-semibold mb-2">Backlinks</h3>
+        {backlinks.map((link: any) => (
+          <div
+            key={link.id}
+            className="text-sm text-blue-500 cursor-pointer"
+            onClick={() => selectNote(link.source_note_id)}>
+            {notes.find((n) => n.id === link.source_note_id)?.title ||
+              "Untitled"}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (note) {
@@ -21,12 +46,43 @@ export default function NoteEditor({ noteId }: { noteId: string }) {
       await updateNote(note.id, { title, content });
     }
   };
+  const processLinks = useCallback(async () => {
+    if (!note) return;
+    // Clear existing links for this source
+    await window.api.clearLinksForNote(note.id);
+    const regex = /\[\[([^\]]+)\]\]/g;
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      const linkText = match[1];
+      // Find target note by title (case-insensitive)
+      const target = notes.find(
+        (n) => n.title.toLowerCase() === linkText.toLowerCase(),
+      );
+      if (target && target.id !== note.id) {
+        await window.api.createLink({
+          sourceNoteId: note.id,
+          targetNoteId: target.id,
+          linkText,
+        });
+      }
+    }
+  }, [content, note, notes]);
 
   const handleDelete = async () => {
     if (note && confirm("Delete this note?")) {
       await deleteNote(note.id);
     }
   };
+
+  // Trigger on content change (debounce might be better)
+  useEffect(() => {
+    if (note) {
+      const timer = setTimeout(() => {
+        processLinks();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [content]);
 
   if (!note) return null;
 
