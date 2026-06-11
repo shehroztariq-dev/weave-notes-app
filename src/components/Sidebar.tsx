@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import useStore from "../store/useStore";
 import { PlusCircle, Moon, Sun, Sidebar as SidebarIcon } from "lucide-react";
 import { useState } from "react";
+import { Branch } from "../types";
 
 export default function Sidebar() {
   const {
@@ -19,7 +20,6 @@ export default function Sidebar() {
 
   const handleCreateBranch = async () => {
     if (!newBranchName.trim() || !selectedNoteId) return;
-    // Create branch from current note
     const rootNote = notes.find((n) => n.id === selectedNoteId);
     if (rootNote) {
       await createBranch(newBranchName, selectedNoteId);
@@ -27,7 +27,6 @@ export default function Sidebar() {
     }
   };
 
-  // Build tree structure
   const tree = buildBranchTree(branches);
 
   if (!sidebarOpen) {
@@ -52,7 +51,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto space-y-1">
-        <BranchTreeItem node={tree} currentBranchId={branchId} />
+        {tree && <BranchTreeItem node={tree} currentBranchId={branchId} />}
         <Link
           to="/"
           className={`block py-1 px-2 rounded ${!branchId ? "bg-blue-100 dark:bg-blue-900" : "hover:bg-gray-200 dark:hover:bg-gray-700"}`}>
@@ -85,7 +84,6 @@ export default function Sidebar() {
   );
 }
 
-// Recursive tree component
 function BranchTreeItem({
   node,
   currentBranchId,
@@ -116,7 +114,6 @@ function BranchTreeItem({
   );
 }
 
-// Helper to build tree from flat branch list
 function buildBranchTree(branches: Branch[]) {
   const map: Record<string, any> = {};
   const roots: any[] = [];

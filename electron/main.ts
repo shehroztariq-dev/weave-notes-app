@@ -1,7 +1,6 @@
 import { app, BrowserWindow } from "electron";
 import path from "node:path";
-import db, { initDB } from "./database";
-import { v4 as uuidv4 } from "uuid";
+import { initDB } from "./database";
 import { registerIpcHandlers } from "./ipcHandlers";
 
 let mainWindow: BrowserWindow | null = null;
@@ -24,14 +23,12 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(createWindow);
-
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
-});
-
 app.whenReady().then(() => {
   initDB();
   registerIpcHandlers();
   createWindow();
+});
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") app.quit();
 });

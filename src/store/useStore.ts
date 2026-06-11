@@ -1,33 +1,23 @@
 import { create } from "zustand";
-import type { Note, Branch } from "../types"; // We'll define types in shared
+import type { Note, Branch } from "../types";
 
 interface AppState {
-  // Data
   notes: Note[];
   branches: Branch[];
   selectedNoteId: string | null;
   selectedBranchId: string | null;
 
-  // UI
   darkMode: boolean;
   commandPaletteOpen: boolean;
   sidebarOpen: boolean;
 
-  // Actions
   fetchNotes: () => Promise<void>;
   fetchBranches: () => Promise<void>;
   selectNote: (id: string) => void;
   createNote: (parentBranchId?: string) => Promise<Note>;
-  updateNote: (
-    id: string,
-    data: { title?: string; content?: string },
-  ) => Promise<void>;
+  updateNote: (id: string, data: { title?: string; content?: string }) => Promise<void>;
   deleteNote: (id: string) => Promise<void>;
-  createBranch: (
-    name: string,
-    rootNoteId: string,
-    parentBranchId?: string,
-  ) => Promise<void>;
+  createBranch: (name: string, rootNoteId: string, parentBranchId?: string) => Promise<void>;
   toggleDarkMode: () => void;
   toggleCommandPalette: () => void;
   toggleSidebar: () => void;
@@ -43,12 +33,20 @@ const useStore = create<AppState>((set, get) => ({
   sidebarOpen: true,
 
   fetchNotes: async () => {
-    const notes = await window.api.getAllNotes();
-    set({ notes });
+    try {
+      const notes = await window.api.getAllNotes();
+      set({ notes });
+    } catch (e) {
+      console.error("Failed to fetch notes:", e);
+    }
   },
   fetchBranches: async () => {
-    const branches = await window.api.getBranchTree();
-    set({ branches });
+    try {
+      const branches = await window.api.getBranchTree();
+      set({ branches });
+    } catch (e) {
+      console.error("Failed to fetch branches:", e);
+    }
   },
   selectNote: (id) => set({ selectedNoteId: id }),
   createNote: async (parentBranchId) => {

@@ -17,16 +17,17 @@ export interface Branch {
   created_at: string;
 }
 
-// Add to src/vite-env.d.ts
-interface Window {
-  api: {
-    createNote: (data: any) => Promise<Note>;
-    getNote: (id: string) => Promise<Note>;
-    updateNote: (id: string, data: any) => Promise<Note>;
-    deleteNote: (id: string) => Promise<void>;
-    getAllNotes: () => Promise<Note[]>;
-    getBranchNotes: (branchId: string) => Promise<Note[]>;
-    createBranch: (data: any) => Promise<any>;
-    getBranchTree: () => Promise<Branch[]>;
-  };
+declare global {
+  interface Window {
+    api: {
+      createNote: (data: any) => Promise<Note>;
+      getNote: (id: string) => Promise<Note>;
+      updateNote: (id: string, data: any) => Promise<Note>;
+      deleteNote: (id: string) => Promise<void>;
+      getAllNotes: () => Promise<Note[]>;
+      getBranchNotes: (branchId: string) => Promise<Note[]>;
+      createBranch: (data: any) => Promise<any>;
+      getBranchTree: () => Promise<Branch[]>;
+    };
+  }
 }

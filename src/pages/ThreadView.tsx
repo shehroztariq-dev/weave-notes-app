@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import useStore from "../store/useStore";
 import NoteEditor from "../components/NoteEditor";
 import NoteList from "../components/NoteList";
+import { Note } from "../types";
 
 export default function ThreadView() {
   const { branchId } = useParams<{ branchId: string }>();
   const {
     notes,
     fetchNotes,
-    getBranchNotes,
     selectedNoteId,
-    selectNote,
     createNote,
   } = useStore();
   const [displayNotes, setDisplayNotes] = useState<Note[]>([]);
@@ -25,8 +24,7 @@ export default function ThreadView() {
   }, [branchId, notes.length]);
 
   const handleNewNote = async () => {
-    const note = await createNote(branchId);
-    // Refresh
+    await createNote(branchId);
     if (branchId) {
       const updated = await window.api.getBranchNotes(branchId);
       setDisplayNotes(updated);
