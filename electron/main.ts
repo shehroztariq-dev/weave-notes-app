@@ -2,6 +2,7 @@ import { app, BrowserWindow } from "electron";
 import path from "node:path";
 import db, { initDB } from "./database";
 import { v4 as uuidv4 } from "uuid";
+import { registerIpcHandlers } from "./ipcHandlers";
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -31,5 +32,6 @@ app.on("window-all-closed", () => {
 
 app.whenReady().then(() => {
   initDB();
+  registerIpcHandlers();
   createWindow();
 });
